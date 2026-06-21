@@ -1,0 +1,19 @@
+# 一般会計 当初予算 主要経費別（フォールバック seed）
+# fiscalYear: 2025 (令和7年度) / type: 予算 / unit: 百万円
+# source: 財務省「令和7年度予算」一般会計（当初）
+# 注意: 本ファイルの数値は概算の seed 値であり、公表値で要検証。
+#       歳入合計 = 歳出合計 になるよう其他で調整している。
+# columns: side,id,name,value
+side,id,name,value
+income,income_shotokuzei,所得税,22521000
+income,income_hojinzei,法人税,17905000
+income,income_shohizei,消費税,24896000
+income,income_kosaikin,公債金,28623200
+income,income_other,その他収入・税収,21596300
+expense,exp_shakaihosho,社会保障関係費,38277800
+expense,exp_kokusaihi,国債費,28217900
+expense,exp_chihokofu,地方交付税交付金等,19029000
+expense,exp_kokyojigyo,公共事業関係費,6085800
+expense,exp_bunkyokagaku,文教及び科学振興費,5510100
+expense,exp_boei,防衛関係費,8700500
+expense,exp_other,その他,9720400
