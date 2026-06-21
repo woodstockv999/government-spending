@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+next-env.d.ts
+# Generated display data is rebuilt from seed CSV / e-Stat.
+/public/data/flows.*.json
+/public/data/index.json
