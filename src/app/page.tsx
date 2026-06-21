@@ -10,6 +10,9 @@ import type { FlowsDoc, IndexDoc } from "@/lib/flows";
 
 type View = "keihi" | "shokan";
 
+// サブパス配置時の接頭辞（未設定なら ""）。
+const BP = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 function downloadCsv(doc: FlowsDoc, suffix: string) {
   const lines = ["side,id,name,value_百万円,構成比_percent"];
   const incomeTotal = doc.totals.income;
@@ -43,7 +46,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/data/index.json")
+    fetch(`${BP}/data/index.json`)
       .then((r) => {
         if (!r.ok)
           throw new Error(
@@ -56,7 +59,7 @@ export default function Home() {
         setYear(idx.default);
         Promise.all(
           idx.years.map((y) =>
-            fetch(`/data/flows.${y}.json`).then((r) => r.json()),
+            fetch(`${BP}/data/flows.${y}.json`).then((r) => r.json()),
           ),
         )
           .then(setAllDocs)
@@ -69,7 +72,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!year) return;
-    fetch(`/data/flows.${year}.json`)
+    fetch(`${BP}/data/flows.${year}.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`flows.${year}.json の取得に失敗しました。`);
         return r.json();
@@ -85,7 +88,7 @@ export default function Home() {
       setMinistryDoc(null);
       return;
     }
-    fetch(`/data/ministry.${year}.json`)
+    fetch(`${BP}/data/ministry.${year}.json`)
       .then((r) => (r.ok ? r.json() : null))
       .then(setMinistryDoc)
       .catch(() => setMinistryDoc(null));
@@ -207,7 +210,7 @@ export default function Home() {
           明細（個別契約・支出先）レベルは初版スコープ外です。
         </p>
         <p>
-          <a href="/admin">管理画面（最新データ取込）</a> ・ 思想参考:
+          <a href={`${BP}/admin`}>管理画面（最新データ取込）</a> ・ 思想参考:
           チームみらい「みらい まる見え政治資金」（コードは非流用）
         </p>
       </footer>
