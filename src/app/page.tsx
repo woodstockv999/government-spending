@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import SankeyChart, { formatYen } from "@/components/SankeyChart";
 import IndicatorPanel from "@/components/IndicatorPanel";
+import TaxBreakdownPanel from "@/components/TaxBreakdownPanel";
 import TrendPanel from "@/components/TrendPanel";
 import type { FlowsDoc, IndexDoc } from "@/lib/flows";
 
@@ -127,6 +128,8 @@ export default function Home() {
             国の予算・決算は年次公表のため、本サイトの数値は日次では変わりません。
             「最新データ取込」は新年度データの取込用です。左が歳入、中央が一般会計、右が歳出です。
           </div>
+
+          <TaxBreakdownPanel doc={doc} />
 
           <TrendPanel docs={allDocs} currentYear={year ?? ""} />
         </>

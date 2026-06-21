@@ -9,7 +9,8 @@ income,income_shotokuzei,所得税,17995000
 income,income_hojinzei,法人税,17046000
 income,income_shohizei,消費税,23838000
 income,income_kosaikin,公債金,35449000
-income,income_other,その他収入・税収,18243700
+income,income_other_tax,その他税収,10729000
+income,income_other_rev,その他収入,7514700
 expense,exp_shakaihosho,社会保障関係費,37719300
 expense,exp_kokusaihi,国債費,27009000
 expense,exp_chihokofu,地方交付税交付金等,17786300
