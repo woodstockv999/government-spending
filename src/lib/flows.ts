@@ -35,6 +35,8 @@ export interface FlowsDoc {
 export interface IndexDoc {
   years: string[]; // 降順
   default: string;
+  /** 所管別（府省別）ビューが利用可能な年度 */
+  ministryYears?: string[];
   generatedAt: string;
 }
 

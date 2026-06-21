@@ -173,6 +173,24 @@ footer.site p {
   border-color: var(--expense);
 }
 
+/* ビュー切替（主要経費別 / 所管別） */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg button {
+  border: none;
+  border-radius: 0;
+  background: var(--panel);
+  padding: 8px 14px;
+}
+.seg button.on {
+  background: var(--accent);
+  color: #fff;
+}
+
 /* 税収内訳 */
 .tax-head {
   display: flex;

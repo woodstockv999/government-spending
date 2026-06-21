@@ -7,7 +7,7 @@
 //
 // 実行: npm run build:flows   （= tsx scripts/build_flows.ts）
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FlowsDoc, FlowLink, FlowNode, IndexDoc } from "../src/lib/flows";
@@ -43,7 +43,12 @@ function parseSeedCsv(text: string): SeedRow[] {
   return rows;
 }
 
-function buildDoc(fiscalYear: string, rows: SeedRow[], origin: FlowsDoc["origin"]): FlowsDoc {
+function buildDoc(
+  fiscalYear: string,
+  rows: SeedRow[],
+  origin: FlowsDoc["origin"],
+  meta?: Partial<Pick<FlowsDoc, "source" | "stage">>,
+): FlowsDoc {
   const incomeRows = rows.filter((r) => r.side === "income");
   const expenseRows = rows.filter((r) => r.side === "expense");
 
@@ -72,9 +77,9 @@ function buildDoc(fiscalYear: string, rows: SeedRow[], origin: FlowsDoc["origin"
   return {
     fiscalYear,
     unit: "百万円",
-    source: "財務省 / e-Stat（一般会計 当初予算）",
+    source: meta?.source ?? "財務省 / e-Stat（一般会計 当初予算）",
     type: "予算",
-    stage: "当初予算（seed・要検証）",
+    stage: meta?.stage ?? "当初予算（seed・要検証）",
     updatedAt: new Date().toISOString(),
     origin,
     totals: { income: incomeTotal, expense: expenseTotal },
@@ -112,6 +117,7 @@ async function main() {
   if (seedFiles.length === 0) throw new Error(`seed CSV が見つかりません: ${SEED_DIR}`);
 
   const years: string[] = [];
+  const ministryYears: string[] = [];
   for (const file of seedFiles) {
     const fiscalYear = file.match(/(\d{4})/)![1];
     const rows = parseSeedCsv(readFileSync(join(SEED_DIR, file), "utf8"));
@@ -120,12 +126,31 @@ async function main() {
     years.push(fiscalYear);
     const oku = (doc.totals.income / 100).toLocaleString("ja-JP", { maximumFractionDigits: 0 });
     console.log(`[build] flows.${fiscalYear}.json 生成 (歳入=歳出=${oku} 億円)`);
+
+    // 所管別（府省別）歳出が seed にあれば ministry.<年度>.json を生成。
+    // 歳入は同じ、歳出を所管別ノードに置き換える（均衡 assert で検証）。
+    const shokanPath = join(SEED_DIR, `shokan_${fiscalYear}.csv`);
+    if (existsSync(shokanPath)) {
+      const incomeRows = rows.filter((r) => r.side === "income");
+      const ministryRows = parseSeedCsv(readFileSync(shokanPath, "utf8")).filter(
+        (r) => r.side === "expense",
+      );
+      const mdoc = buildDoc(fiscalYear, [...incomeRows, ...ministryRows], "seed", {
+        source: "財務省（一般会計 所管別歳出・暫定の例示値）",
+        stage: "当初予算（所管別・暫定の例示値・要検証）",
+      });
+      writeFileSync(join(OUT_DIR, `ministry.${fiscalYear}.json`), JSON.stringify(mdoc, null, 2));
+      ministryYears.push(fiscalYear);
+      console.log(`[build] ministry.${fiscalYear}.json 生成 (所管 ${ministryRows.length} 件)`);
+    }
   }
 
   years.sort((a, b) => Number(b) - Number(a)); // 降順
+  ministryYears.sort((a, b) => Number(b) - Number(a));
   const index: IndexDoc = {
     years,
     default: years[0],
+    ministryYears,
     generatedAt: new Date().toISOString(),
   };
   writeFileSync(join(OUT_DIR, "index.json"), JSON.stringify(index, null, 2));
