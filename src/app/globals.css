@@ -173,6 +173,56 @@ footer.site p {
   border-color: var(--expense);
 }
 
+/* 税収内訳 */
+.tax-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.tax-head-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.tax-head-meta b {
+  color: var(--fg);
+}
+.tax-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tax-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 150px;
+  align-items: center;
+  gap: 10px;
+}
+.tax-name {
+  font-size: 0.85rem;
+}
+.tax-track {
+  background: var(--bg);
+  border-radius: 6px;
+  height: 14px;
+  overflow: hidden;
+}
+.tax-fill {
+  height: 100%;
+  background: var(--income);
+  border-radius: 6px;
+}
+.tax-val {
+  font-size: 0.8rem;
+  text-align: right;
+  color: var(--fg);
+}
+.tax-share {
+  color: var(--muted);
+}
+
 /* 年度トレンド */
 .trend {
   display: flex;
