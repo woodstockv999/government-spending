@@ -1,0 +1,16 @@
+# 一般会計 当初予算 所管別（府省別）歳出（フォールバック seed）
+# fiscalYear: 2024 (令和6年度) / type: 予算 / unit: 百万円
+# ⚠️ 重要: 本ファイルの所管別配分は「暫定の例示値」であり公表値ではない。
+#         必ず財務省「予算書（所管別）」/ e-Stat で検証・差し替えること。
+#         歳出総額(=歳入総額)に一致するよう「その他省庁」で調整している。
+# columns: side,id,name,value
+side,id,name,value
+expense,min_zaimu,財務省,46000000
+expense,min_kosei,厚生労働省,32400000
+expense,min_boei,防衛省,7900000
+expense,min_kokudo,国土交通省,5900000
+expense,min_monka,文部科学省,5300000
+expense,min_soumu,総務省,4700000
+expense,min_norin,農林水産省,2100000
+expense,min_keisan,経済産業省,900000
+expense,min_other,その他省庁,7371700

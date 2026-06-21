@@ -9,4 +9,5 @@ out
 next-env.d.ts
 # Generated display data is rebuilt from seed CSV / e-Stat.
 /public/data/flows.*.json
+/public/data/ministry.*.json
 /public/data/index.json
