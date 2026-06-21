@@ -173,6 +173,45 @@ footer.site p {
   border-color: var(--expense);
 }
 
+/* KPI / 財政指標パネル */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--hub);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.kpi.income {
+  border-left-color: var(--income);
+}
+.kpi.expense {
+  border-left-color: var(--expense);
+}
+
+.kpi-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2px 0;
+}
+
+.kpi-sub {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 input[type="password"],
 input[type="text"] {
   background: var(--panel);
