@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SankeyChart, { formatYen } from "@/components/SankeyChart";
+import IndicatorPanel from "@/components/IndicatorPanel";
 import type { FlowsDoc, IndexDoc } from "@/lib/flows";
 
 function downloadCsv(doc: FlowsDoc) {
@@ -104,6 +105,8 @@ export default function Home() {
               単位 <b>{doc.unit}</b>
             </span>
           </div>
+
+          <IndicatorPanel doc={doc} />
 
           <div className="chart-card">
             <SankeyChart doc={doc} />
