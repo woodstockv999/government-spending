@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+const BP = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export default function AdminPage() {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
@@ -11,7 +13,7 @@ export default function AdminPage() {
     setBusy(true);
     setResult(null);
     try {
-      const res = await fetch("/api/admin/refresh", {
+      const res = await fetch(`${BP}/api/admin/refresh`, {
         method: "POST",
         headers: { "x-admin-token": token },
       });
@@ -79,7 +81,7 @@ export default function AdminPage() {
 
       <footer className="site">
         <p>
-          <a href="/">← サンキー図に戻る</a>
+          <a href={`${BP}/`}>← サンキー図に戻る</a>
         </p>
       </footer>
     </div>
