@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import SankeyChart, { formatYen } from "@/components/SankeyChart";
 import IndicatorPanel from "@/components/IndicatorPanel";
+import TrendPanel from "@/components/TrendPanel";
 import type { FlowsDoc, IndexDoc } from "@/lib/flows";
 
 function downloadCsv(doc: FlowsDoc) {
@@ -34,6 +35,7 @@ export default function Home() {
   const [index, setIndex] = useState<IndexDoc | null>(null);
   const [year, setYear] = useState<string | null>(null);
   const [doc, setDoc] = useState<FlowsDoc | null>(null);
+  const [allDocs, setAllDocs] = useState<FlowsDoc[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +47,15 @@ export default function Home() {
       .then((idx: IndexDoc) => {
         setIndex(idx);
         setYear(idx.default);
+        Promise.all(
+          idx.years.map((y) =>
+            fetch(`/data/flows.${y}.json`).then((r) => r.json()),
+          ),
+        )
+          .then(setAllDocs)
+          .catch(() => {
+            /* トレンドは任意表示。失敗しても本体に影響させない */
+          });
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -116,6 +127,8 @@ export default function Home() {
             国の予算・決算は年次公表のため、本サイトの数値は日次では変わりません。
             「最新データ取込」は新年度データの取込用です。左が歳入、中央が一般会計、右が歳出です。
           </div>
+
+          <TrendPanel docs={allDocs} currentYear={year ?? ""} />
         </>
       )}
 

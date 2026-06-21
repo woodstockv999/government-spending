@@ -173,6 +173,57 @@ footer.site p {
   border-color: var(--expense);
 }
 
+/* 年度トレンド */
+.trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 8px 4px;
+  overflow-x: auto;
+}
+
+.trend-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 76px;
+}
+
+.trend-bondval {
+  color: var(--expense-hi);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.trend-bar-area {
+  display: flex;
+  align-items: flex-end;
+  height: 160px;
+}
+
+.trend-bar {
+  width: 38px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.2s;
+}
+
+.trend-total {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 6px;
+  text-align: center;
+}
+
+.trend-year {
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+.trend-year.cur {
+  color: var(--income-hi);
+  font-weight: 700;
+}
+
 /* KPI / 財政指標パネル */
 .kpi-grid {
   display: grid;
