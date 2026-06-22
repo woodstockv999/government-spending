@@ -13,6 +13,10 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: "3001",
+        // 本番は nginx の /marumie/ 配下に相乗り。サブパス配置のため basePath を固定。
+        // ※ ビルドも同じ値で行うこと: NEXT_BASE_PATH=/marumie npm run build
+        //   ルート(/)で動かしたい場合はこの行を削除して再ビルド。
+        NEXT_BASE_PATH: "/marumie",
       },
     },
   ],
