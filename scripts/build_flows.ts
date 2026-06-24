@@ -184,45 +184,56 @@ async function buildTokyoMode(): Promise<boolean> {
 
 // ─── 東京23区モード ──────────────────────────────────────
 
+// 年度ごとの予算データ（歳出入比率は年度をまたいで同一とする）
+interface WardYearData {
+  total: number;  // 百万円
+  taxRate: number; // 特別区税 / total
+  adjRate: number; // 財政調整交付金 / total
+}
+
 interface WardProfile {
   id: string;
   name: string;
-  total: number;   // 百万円
-  taxRate: number;  // 特別区税 / total
-  adjRate: number;  // 財政調整交付金 / total
-  // 固定比率: 国庫支出金 17%, 都支出金 8%, 特別区債 4%, 残りがその他
-  // 歳出固定比率: 民生費 50%, 教育費 14%, 土木費 10%, 総務費 10%, 衛生費 7%, 産業経済費 3%, 残り
+  // キーは会計年度（降順で記載すること → index の years も降順になる）
+  yearData: Record<string, WardYearData>;
 }
 
+// 固定比率: 国庫支出金 17%, 都支出金 8%, 特別区債 4%, その他 = 残り
+// 歳出固定: 民生費 50%, 教育費 14%, 土木費 10%, 総務費 10%, 衛生費 7%, 産業経済費 3%, その他 = 残り
 const WARDS: WardProfile[] = [
   // 区コード順（特別区協議会 標準順序）
-  { id: "chiyoda",    name: "千代田区",  total:  85000, taxRate: 0.30, adjRate: 0.28 },
-  { id: "chuo",       name: "中央区",    total: 107000, taxRate: 0.27, adjRate: 0.33 },
-  { id: "minato",     name: "港区",      total: 247000, taxRate: 0.39, adjRate: 0.18 },
-  { id: "shinjuku",   name: "新宿区",    total: 167000, taxRate: 0.25, adjRate: 0.37 },
-  { id: "bunkyo",     name: "文京区",    total: 113000, taxRate: 0.26, adjRate: 0.36 },
-  { id: "taito",      name: "台東区",    total: 134000, taxRate: 0.26, adjRate: 0.41 },
-  { id: "sumida",     name: "墨田区",    total: 131000, taxRate: 0.22, adjRate: 0.45 },
-  { id: "koto",       name: "江東区",    total: 217000, taxRate: 0.23, adjRate: 0.44 },
-  { id: "shinagawa",  name: "品川区",    total: 177000, taxRate: 0.27, adjRate: 0.35 },
-  { id: "meguro",     name: "目黒区",    total: 137000, taxRate: 0.28, adjRate: 0.33 },
-  { id: "ota",        name: "大田区",    total: 258000, taxRate: 0.24, adjRate: 0.43 },
-  { id: "setagaya",   name: "世田谷区",  total: 337000, taxRate: 0.25, adjRate: 0.40 },
-  { id: "shibuya",    name: "渋谷区",    total: 150000, taxRate: 0.33, adjRate: 0.27 },
-  { id: "nakano",     name: "中野区",    total: 137000, taxRate: 0.24, adjRate: 0.43 },
-  { id: "suginami",   name: "杉並区",    total: 197000, taxRate: 0.27, adjRate: 0.38 },
-  { id: "toshima",    name: "豊島区",    total: 124000, taxRate: 0.24, adjRate: 0.42 },
-  { id: "kita",       name: "北区",      total: 164000, taxRate: 0.21, adjRate: 0.46 },
-  { id: "arakawa",    name: "荒川区",    total:  94000, taxRate: 0.20, adjRate: 0.47 },
-  { id: "itabashi",   name: "板橋区",    total: 207000, taxRate: 0.21, adjRate: 0.46 },
-  { id: "nerima",     name: "練馬区",    total: 260000, taxRate: 0.22, adjRate: 0.44 },
-  { id: "adachi",     name: "足立区",    total: 288000, taxRate: 0.18, adjRate: 0.48 },
-  { id: "katsushika", name: "葛飾区",    total: 185000, taxRate: 0.19, adjRate: 0.48 },
-  { id: "edogawa",    name: "江戸川区",  total: 278000, taxRate: 0.19, adjRate: 0.47 },
+  { id: "chiyoda",    name: "千代田区",  yearData: { "2025": { total:  91000, taxRate: 0.30, adjRate: 0.28 }, "2024": { total:  85000, taxRate: 0.30, adjRate: 0.28 } } },
+  { id: "chuo",       name: "中央区",    yearData: { "2025": { total: 113000, taxRate: 0.27, adjRate: 0.33 }, "2024": { total: 107000, taxRate: 0.27, adjRate: 0.33 } } },
+  { id: "minato",     name: "港区",      yearData: { "2025": { total: 261000, taxRate: 0.39, adjRate: 0.18 }, "2024": { total: 247000, taxRate: 0.39, adjRate: 0.18 } } },
+  { id: "shinjuku",   name: "新宿区",    yearData: { "2025": { total: 173000, taxRate: 0.25, adjRate: 0.37 }, "2024": { total: 167000, taxRate: 0.25, adjRate: 0.37 } } },
+  { id: "bunkyo",     name: "文京区",    yearData: { "2025": { total: 117000, taxRate: 0.26, adjRate: 0.36 }, "2024": { total: 113000, taxRate: 0.26, adjRate: 0.36 } } },
+  { id: "taito",      name: "台東区",    yearData: { "2025": { total: 139000, taxRate: 0.26, adjRate: 0.41 }, "2024": { total: 134000, taxRate: 0.26, adjRate: 0.41 } } },
+  { id: "sumida",     name: "墨田区",    yearData: { "2025": { total: 135000, taxRate: 0.22, adjRate: 0.45 }, "2024": { total: 131000, taxRate: 0.22, adjRate: 0.45 } } },
+  { id: "koto",       name: "江東区",    yearData: { "2025": { total: 226000, taxRate: 0.23, adjRate: 0.44 }, "2024": { total: 217000, taxRate: 0.23, adjRate: 0.44 } } },
+  { id: "shinagawa",  name: "品川区",    yearData: { "2025": { total: 184000, taxRate: 0.27, adjRate: 0.35 }, "2024": { total: 177000, taxRate: 0.27, adjRate: 0.35 } } },
+  { id: "meguro",     name: "目黒区",    yearData: { "2025": { total: 141000, taxRate: 0.28, adjRate: 0.33 }, "2024": { total: 137000, taxRate: 0.28, adjRate: 0.33 } } },
+  { id: "ota",        name: "大田区",    yearData: { "2025": { total: 267000, taxRate: 0.24, adjRate: 0.43 }, "2024": { total: 258000, taxRate: 0.24, adjRate: 0.43 } } },
+  { id: "setagaya",   name: "世田谷区",  yearData: { "2025": { total: 349000, taxRate: 0.25, adjRate: 0.40 }, "2024": { total: 337000, taxRate: 0.25, adjRate: 0.40 } } },
+  { id: "shibuya",    name: "渋谷区",    yearData: { "2025": { total: 157000, taxRate: 0.33, adjRate: 0.27 }, "2024": { total: 150000, taxRate: 0.33, adjRate: 0.27 } } },
+  { id: "nakano",     name: "中野区",    yearData: { "2025": { total: 141000, taxRate: 0.24, adjRate: 0.43 }, "2024": { total: 137000, taxRate: 0.24, adjRate: 0.43 } } },
+  { id: "suginami",   name: "杉並区",    yearData: { "2025": { total: 204000, taxRate: 0.27, adjRate: 0.38 }, "2024": { total: 197000, taxRate: 0.27, adjRate: 0.38 } } },
+  { id: "toshima",    name: "豊島区",    yearData: { "2025": { total: 129000, taxRate: 0.24, adjRate: 0.42 }, "2024": { total: 124000, taxRate: 0.24, adjRate: 0.42 } } },
+  { id: "kita",       name: "北区",      yearData: { "2025": { total: 169000, taxRate: 0.21, adjRate: 0.46 }, "2024": { total: 164000, taxRate: 0.21, adjRate: 0.46 } } },
+  { id: "arakawa",    name: "荒川区",    yearData: { "2025": { total:  97000, taxRate: 0.20, adjRate: 0.47 }, "2024": { total:  94000, taxRate: 0.20, adjRate: 0.47 } } },
+  { id: "itabashi",   name: "板橋区",    yearData: { "2025": { total: 214000, taxRate: 0.21, adjRate: 0.46 }, "2024": { total: 207000, taxRate: 0.21, adjRate: 0.46 } } },
+  { id: "nerima",     name: "練馬区",    yearData: { "2025": { total: 269000, taxRate: 0.22, adjRate: 0.44 }, "2024": { total: 260000, taxRate: 0.22, adjRate: 0.44 } } },
+  { id: "adachi",     name: "足立区",    yearData: { "2025": { total: 298000, taxRate: 0.18, adjRate: 0.48 }, "2024": { total: 288000, taxRate: 0.18, adjRate: 0.48 } } },
+  { id: "katsushika", name: "葛飾区",    yearData: { "2025": { total: 192000, taxRate: 0.19, adjRate: 0.48 }, "2024": { total: 185000, taxRate: 0.19, adjRate: 0.48 } } },
+  { id: "edogawa",    name: "江戸川区",  yearData: { "2025": { total: 288000, taxRate: 0.19, adjRate: 0.47 }, "2024": { total: 278000, taxRate: 0.19, adjRate: 0.47 } } },
 ];
 
-function buildWardDoc(ward: WardProfile, fiscalYear: string): FlowsDoc {
-  const { id, name, total, taxRate, adjRate } = ward;
+function buildWardDoc(
+  id: string,
+  name: string,
+  data: WardYearData,
+  fiscalYear: string,
+): FlowsDoc {
+  const { total, taxRate, adjRate } = data;
   const r = Math.round;
 
   // 歳入
@@ -242,45 +253,51 @@ function buildWardDoc(ward: WardProfile, fiscalYear: string): FlowsDoc {
   const sangyo   = r(total * 0.03);
   const eother   = total - minsei - kyoiku - doboku - somu - eisei - sangyo;
 
+  const era = fiscalYear === "2025" ? "令和7年度" : fiscalYear === "2024" ? "令和6年度" : `${fiscalYear}年度`;
+
   const rows: SeedRow[] = [
-    { side: "income",  id: `${id}_kuzei`,   name: "特別区税",             value: kuzei   },
-    { side: "income",  id: `${id}_fufu`,    name: "財政調整交付金",        value: fufu    },
-    { side: "income",  id: `${id}_kokko`,   name: "国庫支出金",            value: kokko   },
-    { side: "income",  id: `${id}_toshibu`, name: "都支出金",              value: toshibu },
-    { side: "income",  id: `${id}_saiken`,  name: "特別区債",              value: saiken  },
-    { side: "income",  id: `${id}_iother`,  name: "その他収入",            value: iother  },
+    { side: "income",  id: `${id}_kuzei`,   name: "特別区税",              value: kuzei   },
+    { side: "income",  id: `${id}_fufu`,    name: "財政調整交付金",         value: fufu    },
+    { side: "income",  id: `${id}_kokko`,   name: "国庫支出金",             value: kokko   },
+    { side: "income",  id: `${id}_toshibu`, name: "都支出金",               value: toshibu },
+    { side: "income",  id: `${id}_saiken`,  name: "特別区債",               value: saiken  },
+    { side: "income",  id: `${id}_iother`,  name: "その他収入",             value: iother  },
     { side: "expense", id: `${id}_minsei`,  name: "民生費（福祉・生活保護）", value: minsei  },
-    { side: "expense", id: `${id}_kyoiku`,  name: "教育費",                value: kyoiku  },
-    { side: "expense", id: `${id}_doboku`,  name: "土木費",                value: doboku  },
-    { side: "expense", id: `${id}_somu`,    name: "総務費",                value: somu    },
-    { side: "expense", id: `${id}_eisei`,   name: "衛生費",                value: eisei   },
-    { side: "expense", id: `${id}_sangyo`,  name: "産業経済費",            value: sangyo  },
-    { side: "expense", id: `${id}_eother`,  name: "その他",                value: eother  },
+    { side: "expense", id: `${id}_kyoiku`,  name: "教育費",                 value: kyoiku  },
+    { side: "expense", id: `${id}_doboku`,  name: "土木費",                 value: doboku  },
+    { side: "expense", id: `${id}_somu`,    name: "総務費",                 value: somu    },
+    { side: "expense", id: `${id}_eisei`,   name: "衛生費",                 value: eisei   },
+    { side: "expense", id: `${id}_sangyo`,  name: "産業経済費",             value: sangyo  },
+    { side: "expense", id: `${id}_eother`,  name: "その他",                 value: eother  },
   ];
 
   return buildDoc(fiscalYear, rows, "seed", `${name}一般会計`, {
-    source: `${name}「令和6年度当初予算」（概算・seed値）`,
+    source: `${name}「${era}当初予算」（概算・seed値）`,
     stage: "当初予算（seed・要検証）",
   });
 }
 
 function buildKu23Mode(): boolean {
-  const fiscalYear = "2024";
   const wardInfos: WardInfo[] = [];
 
   for (const ward of WARDS) {
-    const doc = buildWardDoc(ward, fiscalYear);
-    const outFile = `flows.ku.${ward.id}.${fiscalYear}.json`;
-    writeFileSync(join(OUT_DIR, outFile), JSON.stringify(doc, null, 2));
+    const years = Object.keys(ward.yearData).sort((a, b) => Number(b) - Number(a)); // 降順
+    for (const fiscalYear of years) {
+      const data = ward.yearData[fiscalYear];
+      const doc = buildWardDoc(ward.id, ward.name, data, fiscalYear);
+      const outFile = `flows.ku.${ward.id}.${fiscalYear}.json`;
+      writeFileSync(join(OUT_DIR, outFile), JSON.stringify(doc, null, 2));
+      const oku = (data.total / 100).toLocaleString("ja-JP", { maximumFractionDigits: 0 });
+      console.log(`[ku23] ${outFile} 生成 (${ward.name} ${fiscalYear}年度 ${oku}億円)`);
+    }
+    const defaultYear = years[0]; // 最新年度
     wardInfos.push({
       id: ward.id,
       name: ward.name,
-      years: [fiscalYear],
-      default: fiscalYear,
-      totalBudget: ward.total,
+      years,
+      default: defaultYear,
+      totalBudget: ward.yearData[defaultYear].total,
     });
-    const oku = (ward.total / 100).toLocaleString("ja-JP", { maximumFractionDigits: 0 });
-    console.log(`[ku23] flows.ku.${ward.id}.${fiscalYear}.json 生成 (${ward.name} ${oku}億円)`);
   }
 
   const ku23Index: Ku23Index = { wards: wardInfos, generatedAt: new Date().toISOString() };
