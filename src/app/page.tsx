@@ -6,12 +6,21 @@ import IndicatorPanel from "@/components/IndicatorPanel";
 import TaxBreakdownPanel from "@/components/TaxBreakdownPanel";
 import TrendPanel from "@/components/TrendPanel";
 import MinistryPanel from "@/components/MinistryPanel";
-import type { FlowsDoc, IndexDoc } from "@/lib/flows";
+import type { FlowsDoc, IndexDoc, ModesDoc } from "@/lib/flows";
 
 type View = "keihi" | "shokan";
 
-// サブパス配置時の接頭辞（未設定なら ""）。
 const BP = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+function indexUrl(modeId: string): string {
+  return modeId === "kokka" ? `${BP}/data/index.json` : `${BP}/data/index.${modeId}.json`;
+}
+
+function flowsUrl(modeId: string, year: string): string {
+  return modeId === "kokka"
+    ? `${BP}/data/flows.${year}.json`
+    : `${BP}/data/flows.${modeId}.${year}.json`;
+}
 
 function downloadCsv(doc: FlowsDoc, suffix: string) {
   const lines = ["side,id,name,value_百万円,構成比_percent"];
@@ -37,6 +46,8 @@ function downloadCsv(doc: FlowsDoc, suffix: string) {
 }
 
 export default function Home() {
+  const [modesDoc, setModesDoc] = useState<ModesDoc | null>(null);
+  const [mode, setMode] = useState<string>("kokka");
   const [index, setIndex] = useState<IndexDoc | null>(null);
   const [year, setYear] = useState<string | null>(null);
   const [view, setView] = useState<View>("keihi");
@@ -45,44 +56,64 @@ export default function Home() {
   const [allDocs, setAllDocs] = useState<FlowsDoc[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // modes.json をロード（初回のみ）
   useEffect(() => {
-    fetch(`${BP}/data/index.json`)
+    fetch(`${BP}/data/modes.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((m: ModesDoc | null) => {
+        if (m) setModesDoc(m);
+      })
+      .catch(() => {/* modes.json なしでも動作 */});
+  }, []);
+
+  // モード切替時：index を再ロード、年度をリセット
+  useEffect(() => {
+    setIndex(null);
+    setYear(null);
+    setDoc(null);
+    setMinistryDoc(null);
+    setAllDocs([]);
+    setView("keihi");
+    setError(null);
+
+    fetch(indexUrl(mode))
       .then((r) => {
         if (!r.ok)
           throw new Error(
-            "index.json が見つかりません。npm run build:flows を実行してください。",
+            "index が見つかりません。npm run build:flows を実行してください。",
           );
         return r.json();
       })
       .then((idx: IndexDoc) => {
         setIndex(idx);
         setYear(idx.default);
-        Promise.all(
-          idx.years.map((y) =>
-            fetch(`${BP}/data/flows.${y}.json`).then((r) => r.json()),
-          ),
-        )
-          .then(setAllDocs)
-          .catch(() => {
-            /* トレンドは任意表示。失敗しても本体に影響させない */
-          });
+        if (mode === "kokka") {
+          Promise.all(
+            idx.years.map((y) =>
+              fetch(flowsUrl(mode, y)).then((r) => r.json()),
+            ),
+          )
+            .then(setAllDocs)
+            .catch(() => {/* トレンドは任意 */});
+        }
       })
       .catch((e) => setError(e.message));
-  }, []);
+  }, [mode]);
 
+  // 年度切替時：flows を再ロード
   useEffect(() => {
     if (!year) return;
-    fetch(`${BP}/data/flows.${year}.json`)
+    fetch(flowsUrl(mode, year))
       .then((r) => {
-        if (!r.ok) throw new Error(`flows.${year}.json の取得に失敗しました。`);
+        if (!r.ok) throw new Error(`flows の取得に失敗しました (${year})。`);
         return r.json();
       })
       .then(setDoc)
       .catch((e) => setError(e.message));
-  }, [year]);
+  }, [mode, year]);
 
-  // 所管別ビューが利用可能な年度なら ministry.<年度>.json を取得。
-  const ministryAvailable = !!(year && index?.ministryYears?.includes(year));
+  // 所管別ビュー（kokka のみ）
+  const ministryAvailable = mode === "kokka" && !!(year && index?.ministryYears?.includes(year));
   useEffect(() => {
     if (!ministryAvailable) {
       setMinistryDoc(null);
@@ -97,14 +128,32 @@ export default function Home() {
   const isShokan = view === "shokan" && ministryAvailable && !!ministryDoc;
   const chartDoc = isShokan ? ministryDoc! : doc;
 
+  const currentModeInfo = modesDoc?.modes.find((m) => m.id === mode);
+
   return (
     <div className="wrap">
       <header className="site">
-        <h1>国家予算まる見え</h1>
+        <h1>予算まる見え</h1>
         <p className="lede">
-          日本国の一般会計（歳入 → 一般会計 → 歳出）の流れをサンキー図で可視化します。
+          日本の政府・自治体予算をサンキー図で可視化します。
         </p>
       </header>
+
+      {/* モードセレクター */}
+      {modesDoc && modesDoc.modes.length > 1 && (
+        <div className="mode-tabs">
+          {modesDoc.modes.map((m) => (
+            <button
+              key={m.id}
+              className={mode === m.id ? "on" : ""}
+              onClick={() => setMode(m.id)}
+              title={m.description}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && <div className="admin-result err">{error}</div>}
 
@@ -143,7 +192,7 @@ export default function Home() {
 
             <button
               onClick={() =>
-                downloadCsv(chartDoc, isShokan ? "shokan" : "ippan_kaikei")
+                downloadCsv(chartDoc, isShokan ? "shokan" : `${mode}_ippan_kaikei`)
               }
             >
               CSVダウンロード
@@ -165,12 +214,18 @@ export default function Home() {
             </span>
           </div>
 
-          {!isShokan && <IndicatorPanel doc={doc} />}
+          {mode === "kokka" && !isShokan && <IndicatorPanel doc={doc} />}
 
           {isShokan && (
             <div className="notice">
               所管別（府省別）の配分は<b>暫定の例示値（要検証）</b>です。財務省「予算書（所管別）」/
               e-Stat による確定値への差し替えが必要です。
+            </div>
+          )}
+
+          {mode !== "kokka" && (
+            <div className="notice">
+              ※ 本データは概算の seed 値です。{currentModeInfo?.description ?? mode}の公表値による検証が必要です。
             </div>
           )}
 
@@ -180,7 +235,7 @@ export default function Home() {
 
           {isShokan ? (
             <MinistryPanel doc={chartDoc} />
-          ) : (
+          ) : mode === "kokka" ? (
             <>
               <TaxBreakdownPanel doc={doc} />
               <div className="notice">
@@ -189,7 +244,7 @@ export default function Home() {
               </div>
               <TrendPanel docs={allDocs} currentYear={year ?? ""} />
             </>
-          )}
+          ) : null}
         </>
       )}
 
@@ -197,7 +252,7 @@ export default function Home() {
 
       <footer className="site">
         <p>
-          出典: {doc?.source ?? "財務省 / e-Stat"}（一般会計）。データ由来:{" "}
+          出典: {doc?.source ?? "各機関公表資料"}。データ由来:{" "}
           {doc?.origin ?? "seed"}。
         </p>
         <p>
@@ -206,7 +261,7 @@ export default function Home() {
           <b>「決算（確定値）」と「予算（当初/補正）」「速報値」は区別</b>して扱ってください。
         </p>
         <p>
-          ※ 初版の数値は概算の seed 値であり、財務省公表値・e-Stat による検証前です。
+          ※ 初版の数値は概算の seed 値であり、各機関公表値による検証前です。
           明細（個別契約・支出先）レベルは初版スコープ外です。
         </p>
         <p>

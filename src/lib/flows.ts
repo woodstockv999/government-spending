@@ -40,5 +40,16 @@ export interface IndexDoc {
   generatedAt: string;
 }
 
+export interface ModeInfo {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export interface ModesDoc {
+  modes: ModeInfo[];
+  generatedAt: string;
+}
+
 export const HUB_ID = "general_account";
 export const HUB_NAME = "一般会計";

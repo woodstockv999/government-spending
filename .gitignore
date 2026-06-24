@@ -11,3 +11,5 @@ next-env.d.ts
 /public/data/flows.*.json
 /public/data/ministry.*.json
 /public/data/index.json
+/public/data/index.*.json
+/public/data/modes.json
