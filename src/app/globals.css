@@ -173,7 +173,7 @@ footer.site p {
   border-color: var(--expense);
 }
 
-/* モード切替タブ（国 / 東京都 / 台東区 等） */
+/* モード切替タブ（国 / 東京都 / 東京23区） */
 .mode-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -201,6 +201,45 @@ footer.site p {
   border-color: var(--accent);
   color: #fff;
   font-weight: 600;
+}
+
+/* 23区 グリッドセレクター */
+.ward-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+@media (max-width: 640px) {
+  .ward-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ward-grid button {
+  padding: 8px 4px;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ward-grid button.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* 年度表示（年度が1つしかない場合のラベル） */
+.toolbar-year {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 8px 4px;
 }
 
 /* ビュー切替（主要経費別 / 所管別） */

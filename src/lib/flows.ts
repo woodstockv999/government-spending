@@ -51,5 +51,18 @@ export interface ModesDoc {
   generatedAt: string;
 }
 
+export interface WardInfo {
+  id: string;
+  name: string;
+  years: string[];
+  default: string;
+  totalBudget: number; // 百万円
+}
+
+export interface Ku23Index {
+  wards: WardInfo[];
+  generatedAt: string;
+}
+
 export const HUB_ID = "general_account";
 export const HUB_NAME = "一般会計";
