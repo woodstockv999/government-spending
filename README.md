@@ -1,50 +1,70 @@
-# government-spending — 国家予算まる見え (marumie-jp)
+# 国家予算まる見え（marumie-jp）
 
-日本国の**一般会計（歳入 → 一般会計 → 歳出）**の流れをサンキー図で可視化する軽量 Web アプリ。
-チームみらい「みらい まる見え政治資金」の見せ方の思想のみを参考にした**独自実装**です
-（[team-mirai-volunteer/marumie](https://github.com/team-mirai-volunteer/marumie) は AGPL v3。**コードは非流用**）。
+> 日本の国家予算をサンキー図で一目瞭然に可視化する Web アプリです。
 
-- **DBなし**・静的JSON・**軽量**（Next.js 15 App Router + TypeScript）
-- データ源：**e-Stat API**（主）＋ **財務省公表値の seed CSV**（副・フォールバック）
-- 管理画面の**「最新データ取込」ボタン**で再取得 → `flows.json` 再生成
+## 概要
 
-## クイックスタート
-```bash
-npm install
-cp .env.example .env.local   # ADMIN_TOKEN を設定（openssl rand -hex 32）
-npm run build:flows          # seed/e-Stat → public/data/flows.<年度>.json
-npm run build && npm start    # http://localhost:3001
-```
+「どこにいくら使われているのか」が複雑でわかりにくい国家予算を、インタラクティブなサンキー図（フロー図）で視覚的に表現します。
+一般会計・所管別・東京都予算など複数のデータセットを収録し、2024・2025 年度の比較も可能です。
 
-## データの流れ
-```
-data/seed/ippan_kaikei_<年度>.csv ──┐
-                                    ├─ scripts/build_flows.ts ─→ public/data/flows.<年度>.json + index.json
-e-Stat API（ESTAT_APP_ID があれば）─┘            （歳入合計 = 歳出合計 を assert）
-```
-- 表示用 JSON は git 管理外。常に seed / e-Stat から再生成する。
-- e-Stat は `getStatsList` で統計表IDを**動的探索**してから `getStatsData`（ID直書き禁止）。
+## 機能
 
-## 環境変数（`.env.local`／git管理外）
-| 変数 | 用途 |
+- **サンキー図**: 省庁 → 費目 → 主要事業 のお金の流れをひと目で把握
+- **省庁パネル**: 各省庁の予算総額・前年比・主要事業をカード形式で表示
+- **税収内訳パネル**: 所得税・法人税・消費税などの歳入構造を可視化
+- **トレンドパネル**: 年度推移グラフで予算変化を追跡
+- **指標パネル**: GDP 比・国債依存度などのマクロ指標を一覧表示
+- **2024 / 2025 年度対応**: 一般会計・所管・対等・東京都のデータを収録
+
+## 技術スタック
+
+| 役割 | 技術 |
 |------|------|
-| `ESTAT_APP_ID` | e-Stat アプリID（未設定なら seed のみ） |
-| `ADMIN_TOKEN` | `POST /api/admin/refresh` の保護シークレット |
-| `PORT` | 既定 3001（briefing-bot 3000 と非衝突） |
+| フレームワーク | Next.js 14 (App Router) |
+| 言語 | TypeScript |
+| 可視化 | D3.js / カスタム Sankey チャート |
+| スタイル | Tailwind CSS |
+| データ形式 | CSV（`data/seed/`） |
 
-## データの注意（重要）
-- 初版 seed の数値は**概算・要検証**。財務省公表値 / e-Stat で確定すること。
-- `type`（予算/決算）と `stage`（当初/補正/速報/確定）を**区別**。混同しない。
-- 単位は `unit`（百万円）。表示時に億・兆へ整形。
-- 明細（個別契約・支出先）レベルは初版スコープ外。
-- 予算・決算は**年次公表**。「最新データ取込」は新年度データ取込用（リアルタイム更新ではない）。
+## セットアップ
 
-## デプロイ（PM2）
 ```bash
-pm2 start ecosystem.config.js && pm2 save
-```
-詳細・運用メモは [CLAUDE.md](CLAUDE.md) を参照。
+# リポジトリをクローン
+git clone https://github.com/woodstockv999/government-spending.git
+cd government-spending
 
-## ライセンス / 出典
-- 出典：財務省「毎年度の予算・決算」「日本の財政関係資料」、e-Stat（政府統計の総合窓口）
-- 思想参考：チームみらい marumie（コード非流用）
+# 依存パッケージをインストール
+npm install
+
+# フロー データをビルド
+npm run build:flows
+
+# 開発サーバーを起動
+npm run dev
+```
+
+## スクリプト
+
+```bash
+npm run dev          # 開発サーバー起動 (http://localhost:3000)
+npm run build        # 本番ビルド
+npm run build:flows  # CSV からフローデータを生成
+npm run start        # 本番サーバー起動
+```
+
+## データについて
+
+`data/seed/` ディレクトリに CSV 形式で予算データを格納しています。
+
+| ファイル | 内容 |
+|----------|------|
+| `ippan_kaikei_2024/2025.csv` | 一般会計（国） |
+| `shokan_2024.csv` | 所管別予算 |
+| `taito_2024.csv` | 対等予算 |
+| `tokyo_2024/2025.csv` | 東京都予算 |
+
+データは e-Stat（政府統計の総合窓口）等の公開情報を元に作成しています。
+
+## ライセンス
+
+MIT
