@@ -31,13 +31,44 @@ interface SeedRow {
   value: number;
 }
 
+// 簡易 CSV フィールド分割（ダブルクォート囲みフィールド内のカンマ・"" エスケープに対応）。
+function splitCsvLine(line: string): string[] {
+  const fields: string[] = [];
+  let field = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (line[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ",") {
+      fields.push(field);
+      field = "";
+    } else {
+      field += c;
+    }
+  }
+  fields.push(field);
+  return fields;
+}
+
 function parseSeedCsv(text: string): SeedRow[] {
   const rows: SeedRow[] = [];
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith("#")) continue;
     if (line.toLowerCase().startsWith("side,")) continue;
-    const [side, id, name, value] = line.split(",").map((s) => s.trim());
+    const [side, id, name, value] = splitCsvLine(line).map((s) => s.trim());
     if (side !== "income" && side !== "expense") continue;
     const num = Number(value);
     if (!id || !name || !Number.isFinite(num)) throw new Error(`不正な seed 行: ${line}`);

@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 
 const ROOT = process.cwd();
 
+let refreshInProgress = false;
+
 function run(cmd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     execFile(
@@ -34,6 +36,11 @@ export async function POST(req: Request) {
   if (token !== expected) {
     return NextResponse.json({ ok: false, error: "認証に失敗しました。" }, { status: 401 });
   }
+
+  if (refreshInProgress) {
+    return NextResponse.json({ ok: false, error: "refresh already in progress" }, { status: 409 });
+  }
+  refreshInProgress = true;
 
   try {
     // e-Stat 探索 → seed 補完 → 正規化・均衡チェック → JSON 再生成。
@@ -73,5 +80,7 @@ export async function POST(req: Request) {
       },
       { status: 500 },
     );
+  } finally {
+    refreshInProgress = false;
   }
 }
