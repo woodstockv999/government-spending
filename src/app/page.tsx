@@ -172,12 +172,13 @@ export default function Home() {
   const isLoading = !isReady && !error;
 
   return (
-    <div className="wrap">
+    <>
       <div className="crumb-bar">
         <a href="/" title="アプリ一覧へ戻る">🏠 ポータル</a>
         <span className="crumb-sep">›</span>
         <span className="crumb-current">🔍 LENS</span>
       </div>
+      <div className="wrap">
       <header className="site">
         <h1>予算まる見え</h1>
         <p className="lede">日本の政府・自治体予算をサンキー図で可視化します。</p>
@@ -320,6 +321,7 @@ export default function Home() {
           チームみらい「みらい まる見え政治資金」（コードは非流用）
         </p>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

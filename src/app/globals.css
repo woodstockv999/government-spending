@@ -38,11 +38,16 @@ a {
 }
 
 .crumb-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 16px;
-  font-size: 0.85rem;
+  padding: 10px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
 }
 
 .crumb-bar a {
