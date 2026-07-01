@@ -37,16 +37,31 @@ a {
   padding: 24px 20px 80px;
 }
 
-.back-link {
-  display: inline-block;
-  margin-bottom: 12px;
+.crumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
   font-size: 0.85rem;
+}
+
+.crumb-bar a {
   color: var(--muted);
   text-decoration: none;
 }
 
-.back-link:hover {
+.crumb-bar a:hover {
   color: var(--accent);
+}
+
+.crumb-bar .crumb-sep {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.crumb-bar .crumb-current {
+  color: var(--fg);
+  font-weight: 600;
 }
 
 header.site h1 {

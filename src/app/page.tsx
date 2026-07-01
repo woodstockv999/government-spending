@@ -173,7 +173,11 @@ export default function Home() {
 
   return (
     <div className="wrap">
-      <a href="/" className="back-link">← ポータルへ</a>
+      <div className="crumb-bar">
+        <a href="/" title="アプリ一覧へ戻る">🏠 ポータル</a>
+        <span className="crumb-sep">›</span>
+        <span className="crumb-current">🔍 LENS</span>
+      </div>
       <header className="site">
         <h1>予算まる見え</h1>
         <p className="lede">日本の政府・自治体予算をサンキー図で可視化します。</p>
