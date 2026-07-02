@@ -6,6 +6,7 @@ import IndicatorPanel from "@/components/IndicatorPanel";
 import TaxBreakdownPanel from "@/components/TaxBreakdownPanel";
 import TrendPanel from "@/components/TrendPanel";
 import MinistryPanel from "@/components/MinistryPanel";
+import IntlComparisonPanel from "@/components/IntlComparisonPanel";
 import type { FlowsDoc, IndexDoc, ModesDoc, Ku23Index } from "@/lib/flows";
 
 type View = "keihi" | "shokan";
@@ -299,6 +300,7 @@ export default function Home() {
                 国の予算・決算は年次公表のため日次では変わりません。左が歳入、中央が一般会計、右が歳出です。
               </div>
               <TrendPanel docs={allDocs} currentYear={year ?? ""} />
+              <IntlComparisonPanel />
             </>
           ) : null}
         </>

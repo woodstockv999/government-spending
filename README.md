@@ -15,6 +15,7 @@
 - **トレンドパネル**: 年度推移グラフで予算変化を追跡
 - **指標パネル**: GDP 比・国債依存度などのマクロ指標を一覧表示
 - **2024 / 2025 年度対応**: 一般会計・所管・対等・東京都のデータを収録
+- **他国比較パネル**: 日本・米・独・英・仏・韓・中の政府支出/歳入/債務残高（対GDP比）を IMF データで比較
 
 ## 技術スタック
 
@@ -64,6 +65,20 @@ npm run start        # 本番サーバー起動
 | `tokyo_2024/2025.csv` | 東京都予算 |
 
 データは e-Stat（政府統計の総合窓口）等の公開情報を元に作成しています。
+
+### 他国比較データ（`data/seed/intl_gov_finance.json` → `public/data/intl.json`）
+
+日本・米・独・英・仏・韓・中の政府支出／歳入／債務残高（いずれも対GDP比）を、
+IMF DataMapper API（`https://www.imf.org/external/datamapper/api/v1/`）から取得した
+`exp` / `rev`（Public Finances in Modern History Database）・`GGXWDG_NGDP`（World Economic
+Outlook）の3系列で構成しています（2019〜2024年）。取得済みの生データは
+`data/seed/intl_gov_finance.json`（`retrievedAt` に取得日を記録）に seed として保存し、
+`npm run build:flows`（内部で `scripts/build_intl.ts` も実行）で `public/data/intl.json`
+に書き出します（`/api/intl` が返す JSON）。
+日本の「一般会計」は国のみの集計のため、IMF側の「一般政府」（国・地方・社会保障基金を含む）とは
+集計範囲が異なります。単純な数値比較ではなく対GDP比の目安として扱ってください（`intl.json` の
+`caveat` にも同旨を明記）。データ更新時は IMF DataMapper API を再取得し、
+`data/seed/intl_gov_finance.json` の値・`retrievedAt`・出典を書き換えてください。
 
 ## ライセンス
 

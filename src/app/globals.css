@@ -432,6 +432,52 @@ footer.site p {
   font-size: 0.75rem;
 }
 
+/* 他国比較パネル */
+.intl-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.intl-row {
+  display: grid;
+  grid-template-columns: 96px 1fr 56px;
+  align-items: center;
+  gap: 10px;
+}
+
+.intl-name {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.intl-name.jp {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.intl-bar-area {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  height: 18px;
+}
+
+.intl-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--hub);
+  transition: width 0.2s;
+}
+.intl-bar.jp {
+  background: var(--accent);
+}
+
+.intl-value {
+  font-size: 0.8rem;
+  text-align: right;
+  color: var(--muted);
+}
+
 input[type="password"],
 input[type="text"] {
   background: var(--panel);

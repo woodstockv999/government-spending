@@ -13,3 +13,4 @@ next-env.d.ts
 /public/data/index.json
 /public/data/index.*.json
 /public/data/modes.json
+/public/data/intl.json
